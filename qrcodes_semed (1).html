@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Codes — SEMED Junqueiro 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1f2937;
+    --border: #30363d;
+    --accent: #00d084;
+    --accent2: #00a8ff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --card-bg: #161b22;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d2d1f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+
+  .header-titles h1 {
+    font-size: 18px; font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  .header-titles p {
+    font-size: 12px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .header-actions {
+    display: flex; gap: 10px; margin-left: auto;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: 8px; border: none;
+    font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--accent); color: #0d1117;
+  }
+  .btn-primary:hover { background: #00e896; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--border); }
+
+  /* ── FILTERS ── */
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+
+  .filter-group {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .filter-group label {
+    font-size: 12px; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  select, input[type=text] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  select:focus, input[type=text]:focus { border-color: var(--accent); }
+
+  input[type=text] { width: 220px; }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    background: rgba(0,208,132,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(0,208,132,0.3);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex; gap: 24px; padding: 14px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 12px;
+  }
+
+  .stat { display: flex; align-items: center; gap: 8px; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .stat-label { color: var(--muted); }
+  .stat-value { font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── SIZE TOGGLE ── */
+  .view-controls {
+    display: flex; align-items: center; gap: 8px; margin-left: auto;
+  }
+  .size-btn {
+    padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .size-btn.active { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+
+  /* ── GRID ── */
+  main { padding: 24px 32px; }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .grid.large { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .grid.small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(0,208,132,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,208,132,0.1);
+  }
+  .card:hover::before { opacity: 1; }
+
+  .qr-wrap {
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex; align-items: center; justify-content: center;
+    width: 128px; height: 128px; flex-shrink: 0;
+  }
+  .grid.large .qr-wrap { width: 160px; height: 160px; }
+  .grid.small .qr-wrap { width: 100px; height: 100px; }
+
+  .card-info { width: 100%; text-align: center; }
+
+  .card-nome {
+    font-size: 12px; font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+    margin-bottom: 6px;
+    word-break: break-word;
+  }
+
+  .tags {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 4px;
+  }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .tag-turma { background: rgba(0,168,255,0.15); color: var(--accent2); border: 1px solid rgba(0,168,255,0.25); }
+  .tag-turno { background: rgba(0,208,132,0.12); color: var(--accent); border: 1px solid rgba(0,208,132,0.2); }
+
+  .card-matricula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted); margin-top: 6px;
+  }
+
+  .download-btn {
+    width: 100%;
+    padding: 7px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 7px;
+    font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .download-btn:hover { background: var(--surface2); color: var(--accent); border-color: var(--accent); }
+
+  /* ── EMPTY ── */
+  .empty {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 64px 0;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* ── PRINT ── */
+  @media print {
+    header, .stats-bar, .download-btn { display: none !important; }
+    body { background: #fff; color: #000; }
+    .card { border: 1px solid #ddd; break-inside: avoid; }
+    .qr-wrap { background: #fff; }
+    .card-nome, .tag, .card-matricula { color: #000 !important; }
+    .tag-turma { background: #e8f4fd !important; color: #0070c0 !important; }
+    .tag-turno { background: #e8fdf0 !important; color: #00813f !important; }
+    main { padding: 8px; }
+    .grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 999;
+    gap: 20px;
+  }
+  .loading-bar-wrap {
+    width: 300px; height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .loading-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.1s;
+    width: 0%;
+  }
+  .loading-text { font-size: 13px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .loading-logo { font-size: 48px; }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-logo">🔲</div>
+  <div style="font-size:18px;font-weight:800;background:linear-gradient(90deg,#00d084,#00a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Gerando QR Codes...</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+  <div class="loading-text" id="loadingText">Preparando...</div>
+</div>
+
+<header>
+  <div class="header-top">
+    <div class="logo">🔲</div>
+    <div class="header-titles">
+      <h1>QR Codes — SEMED Junqueiro</h1>
+      <p>Sistema de Controle de Frequência Escolar · 2026</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn btn-primary" onclick="downloadAll()">⬇️ Baixar Todos (ZIP)</button>
+    </div>
+  </div>
+  <div class="filters">
+    <div class="filter-group">
+      <label>🔍 Buscar</label>
+      <input type="text" id="searchInput" placeholder="Nome ou matrícula..." oninput="applyFilters()">
+    </div>
+    <div class="filter-group">
+      <label>Turma</label>
+      <select id="turmaSelect" onchange="applyFilters()">
+        <option value="">Todas</option>
+        <option value="EFAFINT8A">EFAFINT8A</option>
+<option value="EFAFINT8B">EFAFINT8B</option>
+<option value="EFAFINT8C">EFAFINT8C</option>
+<option value="EFAFINT8D">EFAFINT8D</option>
+<option value="EFAFINT8E">EFAFINT8E</option>
+<option value="EFAFINT8F">EFAFINT8F</option>
+<option value="EFAFINT8G">EFAFINT8G</option>
+<option value="EFAFM6A">EFAFM6A</option>
+<option value="EFAFM6B">EFAFM6B</option>
+<option value="EFAFM6C">EFAFM6C</option>
+<option value="EFAFM6D">EFAFM6D</option>
+<option value="EFAFM7A">EFAFM7A</option>
+<option value="EFAFM7B">EFAFM7B</option>
+<option value="EFAFM7C">EFAFM7C</option>
+<option value="EFAFM7D">EFAFM7D</option>
+<option value="EFAFM9A">EFAFM9A</option>
+<option value="EFAFM9B">EFAFM9B</option>
+<option value="EFAFM9C">EFAFM9C</option>
+<option value="EFAFM9D">EFAFM9D</option>
+<option value="EFAFV6E">EFAFV6E</option>
+<option value="EFAFV6F">EFAFV6F</option>
+<option value="EFAFV7E">EFAFV7E</option>
+<option value="EFAFV7F">EFAFV7F</option>
+<option value="EFAFV9E">EFAFV9E</option>
+<option value="EFAFV9F">EFAFV9F</option>
+<option value="EJAF1NEJAMA">EJAF1NEJAMA</option>
+<option value="EJAF2NEJAMB">EJAF2NEJAMB</option>
+<option value="EJAF2VEJAMA">EJAF2VEJAMA</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Turno</label>
+      <select id="turnoSelect" onchange="applyFilters()">
+        <option value="">Todos</option>
+        <option value="MATUTINO">Matutino</option>
+        <option value="VESPERTINO">Vespertino</option>
+        <option value="INTEGRAL">Integral</option>
+        <option value="NOTURNO">Noturno</option>
+      </select>
+    </div>
+    <span class="badge" id="countBadge">847 alunos</span>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-dot" style="background:#00d084"></div>
+    <span class="stat-label">Total</span>
+    <span class="stat-value" id="statTotal">847</span>
+  </div>
+  <div class="stat">
+    <div class="stat-dot" style="background:#00a8ff"></div>
+    <span class="stat-label">Turmas</span>
+    <span class="stat-value">28</span>
+  </div>
+  <div class="view-controls">
+    <span style="font-size:12px;color:var(--muted);margin-right:4px;">Tamanho:</span>
+    <button class="size-btn" onclick="setSize('small')">P</button>
+    <button class="size-btn active" onclick="setSize('medium')">M</button>
+    <button class="size-btn" onclick="setSize('large')">G</button>
+  </div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+const STUDENTS = [{"matricula":"202330041122","nome":"LAURA BEATRIZ ROCHA PEREIRA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330032482","nome":"JOSE EVERTON DOS SANTOS FILHO","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202530006460","nome":"CARLOS DANIEL CANUTO BARBOSA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330043332","nome":"HELLOA SONALY DO NASCIMENTO SILVA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330010592","nome":"DEYVISSON SILVA BADU","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202530000321","nome":"ALEX PAULO VIEIRA DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330030076","nome":"JADSON DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202530000662","nome":"GUILHERME ALVES DA SILVA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202530000340","nome":"JOSE ALEX VIEIRA CELESTINO DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330042291","nome":"YASMIM CAMILLY PEDREIRA STURM","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330032132","nome":"ELISE SABRINA MONTEIRO DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330046782","nome":"LAURA SOPHIA DA HORA CAVALCANTE","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330033470","nome":"MARIA CLARA SOUZA BARBOSA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330021756","nome":"ADRIAN FERREIRA DA SILVA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330033579","nome":"MARIA ISABEL SOUZA BARBOSA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330018920","nome":"ISABELLY BATISTA DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202530000330","nome":"ENIO GABRIEL DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202530003575","nome":"ANA BEATRIZ DA SILVA ALVES","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202530000546","nome":"ALEXIA EMANUELLY FERREIRA DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330015150","nome":"FLAVIA YOHANY DOS SANTOS ALVES","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330010064","nome":"JOSE ITALO FERNANDES DA SILVA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330033111","nome":"KAUA CARLOS CARDOZO DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330011080","nome":"YURI RIBEIRO DA SILVA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330019041","nome":"DAVI DA SILVA LOPES","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202530000377","nome":"ALICYA EMANUELLE DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330015089","nome":"ANA FRANCISCA DA SILVA ARAUJO","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330013692","nome":"JOSE CAIO NOLASCO FERNANDES","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330008950","nome":"KETILLY ALMEIDA DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202530000466","nome":"JOSE LUCAS DOS SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330033354","nome":"MARIA CECILIA DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330054541","nome":"LARAH SOPHIA DE OLIVEIRA SILVA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330031206","nome":"CLARA SOPHIA FERNANDES FERREIRA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330015131","nome":"EMYLLE RAYANNE DOS SANTOS LIMA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330053197","nome":"ALEX DOS SANTOS JUNIOR","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330029440","nome":"SERGIO MATEUS FLORENCIO DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330031841","nome":"BRENO SANTOS DA SILVA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330009528","nome":"MATEUS HENRIQUE SANTOS DE ALMEIDA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330021095","nome":"RHAELSON GABRIEL DA SILVA SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330032375","nome":"FELIPE DO ESPIRITO SANTO","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330041300","nome":"MARIA MANUELA SILVA FIGUEIRA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330012720","nome":"LAYZA RAYSSA DE JESUS ROMAO","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330033659","nome":"NICOLE MARIA DA SILVA SOUZA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330043154","nome":"CARLOS EDUARDO DE JESUS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330012514","nome":"ISABELLE NATALINE SILVA DE SANTANA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330009395","nome":"MARIA APARECIDA DE JESUS SILVA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330041169","nome":"LAYLA FRANCINNE FERREIRA MARQUES","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330029683","nome":"PEDRO KAUA DUARTE","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330021694","nome":"YASMIM FERREIRA DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330029549","nome":"THALVANE JOSE COSTA DUARTE","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202530000528","nome":"JOEL LUCAS DE ALMEIDA SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330032400","nome":"JAQUELLYNE SOFIA SANTOS SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330008057","nome":"GEOVANA VITORIA DOS SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330040878","nome":"DAVI RODRIGO SILVA DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330011295","nome":"CARLOS EDUARDO DA SILVA BATISTA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330042774","nome":"ANA LAURA PEREIRA DOS SANTOS SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330006562","nome":"GUILHERME ELIAS DA SILVA LIMA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330030334","nome":"DHEYVID EMANUEL DA CONCEICAO DE OLIVEIRA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330019121","nome":"DEYVISON WESLLEY PEREIRA DA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330018581","nome":"DANIEL BERNARDO GOMES BATISTA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330012837","nome":"FERNANDO DA SILVA SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330030030","nome":"LUIZ OTAVIO LIMA DOS SANTOS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330026761","nome":"JOSE ULISSES DA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330034119","nome":"RICARDO ALEXANDRE SILVA DE JESUS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330019551","nome":"ITALO GABRIEL LIMA SILVA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330029745","nome":"DAVI LUIS GONCALO COSTA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330042237","nome":"JULYA KAUANNY DOS SANTOS SILVA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330043299","nome":"CARLOS LUAN SOARES DOS SANTOS","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330008674","nome":"JOAO JOSE DOS SANTOS NETO","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330029594","nome":"MARCELEY SOPHYA DUARTE MENDONCA","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330030227","nome":"LIS ANALIA DUARTE COSTA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330039868","nome":"JULIANA SANTOS PEREIRA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330055119","nome":"YAGO GOMES DA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330030871","nome":"OTAVIO DOS SANTOS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330029370","nome":"NAYSE GABRIELLY DOS SANTOS SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330010995","nome":"RICARDO LUIZ AVELINO NETO","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330043261","nome":"MYLENA CLARA DOS SANTOS SILVA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202530000401","nome":"JOSE MARCOS DOS SANTOS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330018975","nome":"ELLEN CAROLINE VASCONCELOS DA COSTA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330015113","nome":"CARLOS GABRIEL DA CONCEICAO DA SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330018044","nome":"JAMILLY DA SILVA SANTOS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202530006414","nome":"ALYSSON GABRIEL VIEIRA DA SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330010672","nome":"ELISSANDRA DA SILVA SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330030746","nome":"CICERO JOSE DOS SANTOS NETO","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330043029","nome":"ANTHONY LEVI SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330030165","nome":"ISAAC ALEXSANDER COSTA LAURENTINO","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202530001015","nome":"ANTONIO GABRIEL JESUS LIMA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330018170","nome":"ELIELSON THALES MARCOS DA SILVA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330012612","nome":"ANA LAURA GOMES AVELINO","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330043083","nome":"ANY GRASSYELE SANTOS AMORIMN","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330043459","nome":"LARA SOFIA DA SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202530000573","nome":"ANA KARINA SANTOS SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330015104","nome":"CARLOS ALBERTO SILVA SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330019650","nome":"LAYSA VICTORIA ALVES DOS SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330015060","nome":"YASMIN VITORIA DOS SANTOS MESSIAS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330042649","nome":"ALYCIA VICTORIA SANTOS RIBEIRO LIMA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330029478","nome":"ANDERSON DA SILVA SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330033265","nome":"LARISSA VITORIA SANTANA DOS SANTOS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330015187","nome":"LENIZZE MIKAELLY LOPES DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330006885","nome":"ISABELLY DE OLIVEIRA SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330016424","nome":"ANA SOPHIA DOS SANTOS FELIX","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330041051","nome":"KEVILLYN GOMES DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330019408","nome":"GEOVANA ROCHA DE LIMA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330021390","nome":"WILLIAN GABRYEL DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330009617","nome":"RAISSA FERNANDES","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330009223","nome":"LIVIA NYCOLE SANTOS SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330030138","nome":"FABIO GABRIEL BATALHA LAURENTINO","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330023320","nome":"CARLOS EDUARDO LIMA VENCESLAU","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330041552","nome":"RHUAN MIGUEL DANTAS DE LIRA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330033953","nome":"ORLANDO GABRIEL DA SILVA AMORIM","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330032929","nome":"JOAO GABRIEL DUARTE TAVARES","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330010500","nome":"ARIANE BEATRIZ DA SILVA MATIAS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330029576","nome":"ARTHUR GUILHERME ALBUQUERQUE DA SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330042845","nome":"MARIA RAYSSA LIMA DOS SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330008807","nome":"KAWANNY MIKAELLY DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330019300","nome":"ENZO EMANUEL SILVA DE JESUS","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330018026","nome":"LAVYNIA DIANE DA SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330021264","nome":"THAYNARA ELISA DA SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330031707","nome":"ALISSON RYAN SILVA OLIVEIRA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330015098","nome":"ANDERSON MICHEL PEREIRA DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330025343","nome":"MARIA KYARA DOS SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330054363","nome":"DAVI DOUGLAS DE OLIVEIRA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330031850","nome":"DANIEL VITOR DE ANSELMO BRITO","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330034450","nome":"MIKAELL LUCAS BRITO PEREIRA DA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330032446","nome":"FLAVIA GABRIELE DOS SANTOS SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330024195","nome":"EVELLY VITORIA DA SILVA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330009902","nome":"THAIS GLEICE DA SILVA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330040920","nome":"ANA VITORIA DOS SANTOS SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330032983","nome":"KAIQUE MIGUEL PEREIRA DA SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330027437","nome":"EDILLYN DA SILVA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202530001033","nome":"ANA BEATRIZ DA SILVA LIMA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330015220","nome":"RENAN RAFAEL DA SILVA SOARES","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330015122","nome":"CLARA ROBERTA SOARES DA SILVA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202430004990","nome":"LARISSA DOS SANTOS SOUZA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330011025","nome":"TIAGO RIBEIRO CARNEIRO","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330014770","nome":"MARIA JARBIANA DOS SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330032769","nome":"JORGE HENRIQUE DA SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330042531","nome":"MARIA EDUARDA DA SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202530007485","nome":"MANOELA MARIA DE FRANCA ARAUJO","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330044723","nome":"ADRIEL BRANDAO RIBEIRO","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330043520","nome":"GLEICIANE ALVES DE LIMA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330011114","nome":"SARA LAIS DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330012579","nome":"RUANDERSON GABRIEL MENDES SOARES","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330054766","nome":"MIGUEL SERAFIM ALVES","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330042460","nome":"ALEXSANDRA MYRELLE DOS SANTOS COSTA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330013610","nome":"DAYANE BEATRIZ DOS SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330031108","nome":"GRAZIELLY DA SILVA SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330010823","nome":"JENIFFER ADRIELLY SILVA SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330021792","nome":"ADRIEL VITOR LIMA GUEDES","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330015196","nome":"MARIA SOPHIA FERREIRA DA SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330010968","nome":"EMERSON EMANUEL SANTOS GUEDES","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330015140","nome":"FABIO FERREIRA CAVALCANTE","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330019373","nome":"WESLEY GABRIEL DA SILVA SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330019140","nome":"MICHEL DOS SANTOS BATISTA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202530000994","nome":"JOSE ALESSANDRO DOS SANTOS OLIVEIRA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330043397","nome":"KEZIA MARIA DOS SANTOS FERREIRA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202330041196","nome":"LUAN HENRIQUE DOS SANTOS SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330015178","nome":"KETHILLIN SOPHIA FERREIRA DOS SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330020098","nome":"PEROLA IASMIM DA SILVA SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330034048","nome":"PAULO RAPHAEL FERREIRA SEABRA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330010959","nome":"JOAO VITOR RIBEIRO SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330025684","nome":"SAMARA FERNANDA SOUZA SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330042406","nome":"MARCIA BEATRIZ FERREIRA DOS SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330019328","nome":"WELLINGTON GABRIEL DA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330015230","nome":"VIVIANE DA SILVA SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202430008523","nome":"DOUGLAS RUAN DA SILVA HONORATO","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330043477","nome":"WESLEY HENRIQUE DOS SANTOS PEREIRA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330023797","nome":"EMANUELE VITORIA DOS SANTOS","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330029502","nome":"LUCAS MANOEL ALVES MONTEIRO DOS SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330040798","nome":"ANA LUIZA LIMA SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330030568","nome":"GABRIEL DE FRANCA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330011992","nome":"MIGUEL GONCALVES DE MELO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330026538","nome":"ANALICE DA SILVA BARBOSA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330037012","nome":"MARIA KARLLA SANTOS CANUTO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330011894","nome":"MARIA GABRIELA DA SILVA MONTEIRO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330055718","nome":"ANA CLARA FRANCA DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330032606","nome":"KAYLLANY SOFIA SANTOS OLIVEIRA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330011615","nome":"JULIA GABRIELLY DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330012158","nome":"PAULO GABRIEL GOMES FERREIRA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330037649","nome":"MARIA EDUARDA DO NASCIMENTO SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202530001679","nome":"LARISSA DA SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330054640","nome":"LIVYA DOS SANTOS SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000632","nome":"JOSE GABRIEL SILVA SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202430004785","nome":"KYARA MARIA SANTOS VIEIRA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330055861","nome":"ISLAN VITORIO DOS SANTOS SILVA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330035368","nome":"GISELE NAYLLANE DOS SANTOS SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000605","nome":"ITALO GUSTAVO SANTOS COSTA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330028588","nome":"JOSE ARTHUR DE SOUZA SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330027992","nome":"EVELLY KAROLLAINY SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330039320","nome":"VALDIR MATHEUS PEREIRA DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000946","nome":"LUIZ OTHAVIO DA SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330025728","nome":"RAYNNY MARIA DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330035994","nome":"JOSE EMANUEL SOBRAL SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000561","nome":"BRENDA DE JESUS SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330011910","nome":"ANTONIO EDUARDO DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000928","nome":"EVELLY GABRIELA DOS SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330011197","nome":"BRUNA VICTORIA SILVA DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330032660","nome":"RILARY SOFIA SOBRINHO DUARTE","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330030915","nome":"MARCIO HIGOR COSTA DUARTE SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330032624","nome":"MARIA CLARA DOS SANTOS PEREIRA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000552","nome":"ANNA LUIZA DA SILVA SARMENTO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330037184","nome":"MURILO RICARDO DOS SANTOS SILVA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330032633","nome":"MARIA CLARA FARIAS DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330008567","nome":"PRISCILA VIEIRA OLIVEIRA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330037308","nome":"NATALIA GABRIELY SANTOS DA SILVA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330013360","nome":"ANA KAROLINE ALMEIDA MADEIRO","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000650","nome":"LUIS FERNANDO SANTOS COSTA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330029600","nome":"CARLA BEATRIZ NASCIMENTO COSTA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202430000580","nome":"EMILLY PAULA BATISTA SILVA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330038520","nome":"PAULA NUNES SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202530001599","nome":"WALLACE DOS SANTOS VITORINO","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330007873","nome":"RENE MARQUES DA SILVA SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330036721","nome":"JOAO PEDRO DA SILVA MORAES","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330008478","nome":"BEATRIZ DA ROCHA FERNANDES","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330013001","nome":"VICTOR KAIO DE OLIVEIRA SOUZA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330040813","nome":"DEYVID QUEIROZ DOS SANTOS FILHO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330040770","nome":"DAVI LUCAS LIMA QUEIROZ","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330039581","nome":"CASSIO RAFAEL SANTOS DA SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330008351","nome":"MILENA CECILIA NASCIMENTO SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330040063","nome":"ADRIEL DA SILVA SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330009170","nome":"EMERSON BEZERRA DOS SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330039367","nome":"WILLYAN JOAQUIM DOS SANTOS OLIVEIRA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330012668","nome":"CICERO GABRIEL SILVA NATIVIDADE COSTA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330008914","nome":"PEDRO BATISTA NETO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330053965","nome":"MIRELLY VITORIA DA SILVA LIMA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330036187","nome":"JOSE OTHAVIO DA SILVA","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330011858","nome":"WILAMES DIEGO DOS SANTOS SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330032517","nome":"GEOVANA AYCHILA DUARTE DE CARVALHO","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330011150","nome":"AMANDA BEATRIZ DOS SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330010144","nome":"ADRYAN VICTOR DA SILVA SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202430000964","nome":"ANTONY GABRIEL SILVA SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330029754","nome":"CLARA LAVYNIA SILVA LIMA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330013404","nome":"JOAO PEDRO SANTOS DA SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330011043","nome":"ELOA DA SILVA MEDEIROS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330035831","nome":"JOAO PEDRO MELO DANTAS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202430000614","nome":"JOSE GABRIEL ALVES DOS SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202530004071","nome":"DANIEL SANTOS DA SILVA JUNIOR","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330027740","nome":"AILTON DA SILVA SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202430001040","nome":"EMILLY SOFHIA ROCHA SANTOS","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202330033891","nome":"LIVIA KAROLINE SANTOS ALBUQUERQUE","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330040850","nome":"GUSTAVO KALEB ABRANTES SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330012926","nome":"VERONICA BEATRIZ RODRIGUES DOS SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330028701","nome":"KETLYN SAYONARA SANTOS DA SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330038996","nome":"RAFAELLA SANTOS AGUIAR","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330011473","nome":"LUCIELLY MARIA OLIVEIRA SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330041202","nome":"LUCIANO HENRIQUE FERRO DE SA NETO","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330041140","nome":"KLAYVERSON KAYKE SILVA SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202430000973","nome":"MARIA EDUARDA AMANCIO DOS SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330012274","nome":"ALAN DOS SANTOS ALMEIDA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330035359","nome":"APARECIDA RAISSA DOS SANTOS BARBOSA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330035297","nome":"GABRIEL HENRIQUE DOS SANTOS SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330011769","nome":"LUCAS MIKAELL DOS SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330036919","nome":"LAZARO DAVI GONZAGA DA SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202430006752","nome":"MICHEL DOS SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330040448","nome":"ARTUR HENRIQUE SANTOS TEODOZIO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330032670","nome":"SAMUEL KAUA FERREIRA BELCHIOR","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330039518","nome":"YANARA DE SOUZA BORBA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330055736","nome":"AGATHA LAIS DOS SANTOS GUEDES","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330016068","nome":"ANALYCE ARAUJO DOS SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330025380","nome":"MICHELE SANTOS PEREIRA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330053947","nome":"LORANNE ARYELE SANTOS MINERVINO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330040223","nome":"ANA BEATRIZ LIMA DOS SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330010897","nome":"MYRELLA SOPHIA DE JESUS SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330030586","nome":"JOSE VANDERSON DA SILVA SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330016282","nome":"ANGELINA DE ARAUJO NASCIMENTO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330036810","nome":"JOSE VINICIUS DA SILVA FERREIRA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330022403","nome":"CRISTHIAN ALEXSANDRO DA SILVA ARAUJO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330028953","nome":"LUIZ GABRIEL DA SILVA MARQUES","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330038000","nome":"FERNANDO DIEGO DOS SANTOS NASCIMENTO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330022510","nome":"DAVID OLIMPIO DOS SANTOS MESSIAS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330026681","nome":"EMERSON KAUAN DOS SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330022575","nome":"DAVI OLIMPIO DOS SANTOS MESSIAS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330008647","nome":"JOSE MARLISSON BEZERRA DOS SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330037578","nome":"THAYLA SOFIA SILVA BENTO","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330041490","nome":"MATEUS FEIJO DE MELO ACACIO","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330035555","nome":"HURIEL NATHAN PEREIRA SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330039732","nome":"DAVI PEREIRA DE BRITO","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330010930","nome":"INGRID MAYSA DA SILVA SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330033971","nome":"LUAN GABRIEL SOUZA SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330030530","nome":"PEDRO GABRIEL DOS SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330026663","nome":"AMANDA HELOIZE SANTOS SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330011802","nome":"KETILLY KAYLLANE DA SILVA SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330011007","nome":"HUGO GABRIEL SANTOS OLIVEIRA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330012069","nome":"MARCELA KAROLYNE DANTAS DOS SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330033855","nome":"VITORIA GABRIELLY DOS SANTOS BARBOSA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330037925","nome":"ALBERT DIOGO VIANA BRANDAO","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330015839","nome":"ANA CLARA DOS SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330046915","nome":"YASMIN THALYNE DE JESUS SANTOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330038566","nome":"PEDRO EMMANUEL DA SILVA SOUZA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330038833","nome":"PEDRO HENRIQUE DA SILVA FERREIRA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330033514","nome":"DIOGO BATISTA DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330023732","nome":"JANDSON DANILO DOS SANTOS SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330038109","nome":"GEYSLA MAYARA DE MORAIS NASCIMENTO","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330046933","nome":"RAISSA VITORIA SANTOS SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330052921","nome":"EDUARDO DA SILVA SANTANA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202530007645","nome":"LUIS MIKAEL LIMA BARBOSA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330029629","nome":"ANA CLARA DA SILVA SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330032562","nome":"JONAS DANIEL DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330028247","nome":"JOAO BATISTA DOS SANTOS SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202530004895","nome":"LARA DANYELLE DA SILVA CONCEICAO","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330033917","nome":"FATIMA ANTONYELLE ALVES BARBOSA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330011553","nome":"DANIELLE BEATRIZ SANTOS DA SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330026860","nome":"ARYADNE ELOA MARTINS DA SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330046951","nome":"VITORIA BEATRIZ DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330030639","nome":"JOSE ROBERTO BARBOSA DA SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330053400","nome":"AMANDA VITORIA DA SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330027633","nome":"ERICK KAUA DA SILVA SOUZA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202430001157","nome":"GABRIELLY VITORIA DOS SANTOS FERREIRA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330038181","nome":"ISAAC WINICIUS DA SILVA SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330028775","nome":"LAYSA MIKAELLE DA PAZ SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202430003250","nome":"GUILHERME DOS SANTOS SILVA","turma":"EFAFINT8B","turno":"INTEGRAL"},{"matricula":"202530001614","nome":"EMILLY CECILIA ROCHA DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330012739","nome":"MANUELLY VITORIA MACARIO DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330025497","nome":"MYRELLE RAYANE DOS SANTOS SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330029057","nome":"MAISLA BARBARA SALES MARTINS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330011590","nome":"FERNANDA APARECIDA SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330032544","nome":"GUSTAVO HENRIQUE PEREIRA DOS ANJOS","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202430000599","nome":"ISABELA SOFIA DE OLIVEIRA LIMA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330030601","nome":"VITOR SILVA DOS SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330029709","nome":"ISABELE DOS SANTOS BATISTA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330040902","nome":"KARLA STERFANNY GOMES SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330002320","nome":"JOAO CARLOS DA SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330033908","nome":"JOYCE MANUELE SILVA SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330020472","nome":"CAIQUE DA SILVA SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330043323","nome":"NICOLAS SANTOS BARBOSA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202430001139","nome":"YURI NEVES CAETANO DA SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330022717","nome":"DEYVISSON DANIEL DOS SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202430001101","nome":"MIRIA EMANUELLY DOS SANTOS SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330027301","nome":"BRUNA DANIELA PEREIRA DA SILVA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202430001110","nome":"TAUANE MANUELE DA SILVA SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330001575","nome":"WIKLAFYS WENDEL COSTA DA SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000255","nome":"ANNA RUTH SANTOS SEVERO","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330003319","nome":"MARIA BEATRIZ DA SILVA SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202530001310","nome":"KAMILLE EMANUELLE VITAL PEREIRA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330002680","nome":"JOSE GUILHERME FIGUEIREDO CAVALCANTE","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001584","nome":"KAUA EDUARDO DA SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330003364","nome":"RENATA CRISTINA DOS SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202530001249","nome":"ANA BEATRIZ DUARTE SANTANA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330002741","nome":"MARIA AMANDA GRAZIELY ALVES CAVALCANTE","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000710","nome":"JOSE MORAES NETO","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000818","nome":"GEOVAN DOS SANTOS FERREIRA JUNIOR","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330002536","nome":"LUCAS MIKAEL PEREIRA DA SILVA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001305","nome":"JOHNATAN KAIKE DA SILVA SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000531","nome":"JOSE JOAO ELIAS SILVA PEREIRA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000550","nome":"EVILLY VITORIA DOS SANTOS NUNES","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000264","nome":"ANA LAURA BARBOSA DOMINGOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330002474","nome":"LEONARDO DE SANTANA SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000916","nome":"LUAN GABRIEL BATISTA DA SILVA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000970","nome":"MANOEL FRANCISCO DA SILVA JUNIOR","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001136","nome":"ARIANNY BEATRIZ SILVA AGUIAR","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000738","nome":"FLAVIA LETICIA DA SILVA SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000282","nome":"CARLOS ALEX ALVELINO","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202430001540","nome":"ADISSON RUAN ALMEIDA DE LIMA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001440","nome":"CLEITON MARCOS SANTOS DE OLIVEIRA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202530001267","nome":"MARIA ISABELLY DOS SANTOS CARDOSO","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000335","nome":"ELOISE DAS CHAGAS SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330031135","nome":"ANA BEATRIZ LIMA DE JESUS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330001520","nome":"JULIA EMANUELLE DA SILVA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001870","nome":"TALLIS HENRIQUE DE OLIVEIRA SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202530001338","nome":"MARIA DA GLORIA CAVALCANTE DUARTE","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330006740","nome":"SAMYRA ELOYSE DA SILVA SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000291","nome":"CICERA AMANDA DOS SANTOS ALMEIDA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000620","nome":"WILLIAM GUTEMBERG ALVES DOS SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330003622","nome":"GABRIEL MONTEIRO RIBEIRO","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330002643","nome":"LUIZ GUSTAVO NATIVIDADE BARBOSA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330013146","nome":"INGRID MICAELLY DOS SANTOS SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330003239","nome":"PAULA FERNANDA BATISTA LOPES","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330000792","nome":"KETILLY GABRYELLE SILVA DOS SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000362","nome":"ERIC ROBERTO SANTOS DE SOUZA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330001350","nome":"RIAN VITOR DIVINCULA DA SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330003300","nome":"PAULO FHELIPE PEREIRA DOS SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001056","nome":"MARIA LIVIA DOS SANTOS LIMA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000836","nome":"LAUANE VITORIA DE SOUZA SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330002142","nome":"SAMYRA MIKAELLA CAVALCANTE DOS SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000317","nome":"ELOISA KAUANE DE OLIVEIRA SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000925","nome":"GUSTAVO DA SILVA OLIVEIRA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000380","nome":"ERICK ARTHUR FRANCA SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330002966","nome":"MARIA ELOA CORREIA DE SOUZA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000854","nome":"LIONEL DA SILVA SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000273","nome":"RUAN CARLOS GOMES BARBOSA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330055905","nome":"ALICE HAYANNE DOS SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000513","nome":"JOSE GARIBALDE SAMPAIO FERRO NETO","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000676","nome":"FERNANDA DA SILVA SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330000943","nome":"LUAN MIGUEL PINHEIRO DOS SANTOS","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000308","nome":"ARTHUR GOMES SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000774","nome":"JULYA LARISSA CORDEIRO SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330001940","nome":"ANA JULIA DA SILVA DOMINGOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202430004758","nome":"MILLENY LORRANY DOS SANTOS SILVA","turma":"EFAFM9A","turno":"MATUTINO"},{"matricula":"202330000344","nome":"CAMILLY VICTORIA DOS SANTOS CEZAR","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202430001747","nome":"YURI EMANNUEL ALVES RODRIGUES","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330034861","nome":"WILLYAM RAPHAEL DE ALMEIDA MELO","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330003417","nome":"NICOLLY SANTOS MARTINS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330000433","nome":"JARDIEL DOS SANTOS ARAUJO","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330003669","nome":"SAMUEL SANTOS MEIRELES","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330003462","nome":"TAUANY BEATRIZ DE CARVALHO SOUZA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032553","nome":"ISADORA DA SILVA RODRIGUES","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202530007449","nome":"JOSE GABRIEL PASQUALOTTO JOAQUIM","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330029404","nome":"PEDRO HENRIQUE DOS SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330001421","nome":"JOAO VICTOR DE ALMEIDA SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330003130","nome":"MARCOS VINICIUS SANTOS BARBOSA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330003506","nome":"VICTOR FERNANDO SANTOS VIANA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032938","nome":"IGOR ANTONIO MOREIRA DOS SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202530001098","nome":"MARIA EDUARDA SOUZA SANTOS","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330002330","nome":"JOAO PEDRO MARTINS DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032740","nome":"JULIA GABRIELY DOS SANTOS SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330033819","nome":"MARCIO ROBERTO DA SILVA LIMA JUNIOR","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330034709","nome":"WILLIANE VITORIA DA SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202430001845","nome":"RONNY GABRIEL DOS SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202430001068","nome":"JOAO HENRIQUE SANTOS ALVES","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202530007565","nome":"VANESSA VITORIA TAVARES DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330034487","nome":"PEDRO FERNANDO SOARES NUNES","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330032348","nome":"BERNARDO DA SILVA SANTOS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330002222","nome":"GABRIELLY VITORIA DOS SANTOS","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330033050","nome":"KIMBERLLY LAYANNE SANTOS COSTA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330034262","nome":"MIRELLY LAIS DOS SANTOS SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330034398","nome":"PAULO HENRIQUE TAVARES DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330035161","nome":"WESLEY MACIEL ALVES DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330053221","nome":"WELLINGTON ARAUJO DA SILVA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330032571","nome":"JACKSON PIERRE DA SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330032464","nome":"DAVI WANDERLAN DE MELO SANTOS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202430003269","nome":"MARIA EDUARDA DOS SANTOS SOARES","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330031977","nome":"ARLEN JOAQUIM DA SILVA GOMES","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330031547","nome":"ARIELE DOS SANTOS TRINDADE","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330032393","nome":"CARLOS VITOR DA SILVA SANTOS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330033846","nome":"MARIA HELOISA ALVES DOS SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330031000","nome":"ALANA MARIA DA SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330032590","nome":"JANIEL OLIVEIRA DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032070","nome":"BARBARA SOFIA RIBEIRO SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330001771","nome":"GISLANE DOS SANTOS SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032894","nome":"JULIO GABRIEL GOMES BATISTA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330035009","nome":"MARIA SANDY LETICIA SANTOS SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330033461","nome":"MARAISA EMANUELE FERREIRA JULIAO","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330003453","nome":"SARAH NAIANE DA SILVA SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032689","nome":"JOSE AUGUSTO DA SILVA SANTOS JUNIOR","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330033102","nome":"MARIA CLARA DO CARMO DUARTE SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330033176","nome":"LUYZE GABRYELLE DE FREITAS SANTOS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330001566","nome":"EMYLLE DA SILVA ALMEIDA","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202330041276","nome":"LUIZ DAVI PEREIRA DE SOUZA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330001270","nome":"CAMILA YASMIM DA SILVA FERREIRA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330032704","nome":"JOSE DENISVAN DA SILVA LOPES","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330002044","nome":"EDSON CLEITON DA COSTA SANTOS E SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330021907","nome":"JOAO CARLOS BERNARDO DE ALMEIDA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330003382","nome":"MYRELLA THAYNAN VERISSIMO DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330003480","nome":"VINICIUS GABRIEL DA SILVA SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330039886","nome":"MARIA DANIELE DA SILVA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330032526","nome":"FABIANA PEREIRA RANGEL DOS SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330003195","nome":"MARIA APARECIDA GOMES DA SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330002984","nome":"LUIS OTAVIO FELIX BARBOSA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330001029","nome":"HENRIQUE RAFAEL SANTOS GONZAGA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330035152","nome":"NYCOLE DOS SANTOS SILVA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330002910","nome":"KAUA NICOLLAS FERREIRA DE LIMA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330001495","nome":"ELAINE NASCIMENTO MONTEIRO","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330003140","nome":"NATHALIA PEREIRA DA SILVA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330032750","nome":"ADRYAN NYCOLAS DOS SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202530001122","nome":"LUIZ OTAVIO PEREIRA SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330002877","nome":"LAUANDA GABRYELE SOUZA DE JESUS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330002115","nome":"EMILE RIKELE DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330002901","nome":"LAURA BEATRIZ DOS SANTOS SILVA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330032698","nome":"ADRIEL JHONATAS DO NASCIMENTO MONTEIRO","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330024435","nome":"JOSE VITOR DA SILVA SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330000406","nome":"ISABELLE LORANY LOPES LIMA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330034979","nome":"SOPHIA VALENTINA SANTOS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202330008389","nome":"FELIPE JEFFERSON DE CARVALHO LOPES","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330032722","nome":"ANGELO DA SILVA ALVES","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330002652","nome":"JULIANA DA SILVA SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330033532","nome":"LUCAS GABRIEL DE SOUZA SILVA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330003471","nome":"THAIS SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330034988","nome":"VITOR JARDIEL DA SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330003355","nome":"MANOEL MONTEIRO NETO","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330028882","nome":"LUCAS MATEUS BISPO DOS SANTOS","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202530001104","nome":"LUAN WILTON DOS SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330003936","nome":"WESLEY DAVID DA SILVA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330038341","nome":"YAN GABRIEL DA SILVA SANTOS","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330002429","nome":"JOAO VITOR DOS SANTOS SOUZA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202430008739","nome":"EDUARDA RIBEIRO MARQUES","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330034010","nome":"MARIA EDUARDA DA SILVA LIMA","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330003758","nome":"SUELLEN YASMIM DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202530001070","nome":"LUCAS DOS SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330002240","nome":"ROMILTON DOS SANTOS FILHO","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330043682","nome":"LUIZ HENRIQUE DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330035143","nome":"WENDEL NICOLAS BEZERRA ALVES","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330036820","nome":"IGOR VINICIUS DOS SANTOS SILVA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330035199","nome":"PEDRO HENRIQUE FERREIRA DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330003515","nome":"MARCOS SUEL DA SILVA SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330003767","nome":"TAYLANE VITORIA GOMES ARAUJO","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330003847","nome":"THICIANE LETICIA SANTOS FREITAS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330002492","nome":"JOSE WEVERTON SILVA DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330001299","nome":"NYCOLAS RAFAEL SANTOS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330002465","nome":"JOSE CAUA DA SILVA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330033926","nome":"NATHANNAEL LEVY DA SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330055404","nome":"JOAO PEDRO MELO MACHADO","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330000489","nome":"JOSE EDUARDO SIMAO DOS SANTOS","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330003551","nome":"MICAEL DOS SANTOS BATISTA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330032491","nome":"EMANUELLY MARILIA TENORIO DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330002400","nome":"JOAO PEDRO SOUSA DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330017842","nome":"GABRIEL DA SILVA SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330011366","nome":"CARLOS EDUARDO DA SILVA ALVES","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330003542","nome":"MARIA MAYZA FERNANDA SANTOS LIMA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330035090","nome":"SAULO ENZO SANTOS BATISTA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330035072","nome":"VITORIA LIMEIRA GOIS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330001978","nome":"CARLEANE FERREIRA DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330000522","nome":"ERICK BENJAMYN SANTOS DA SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330037513","nome":"JOSE VALDEMIR SANTOS SILVA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330033004","nome":"JAQUELINE SANTOS SILVA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202330041561","nome":"MELYSSA AMANDA DOS SANTOS SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330017940","nome":"ALISSON DOS SANTOS FERREIRA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330005242","nome":"JOAO PEDRO DE OLIVEIRA BATISTA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202430008855","nome":"CLEVERTON DOUGLAS DA SILVA CORDEIRO","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330024640","nome":"DAVID GABRIEL DA SILVA SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330016676","nome":"ELLEN SOFYA DA SILVA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330018008","nome":"JOHN JORDAO DOS SANTOS SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330014340","nome":"EMILLE DA SILVA SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202430008040","nome":"LAUANNY VITORIA SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330016845","nome":"LIVIA DA SILVA VITAL","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330014662","nome":"JHONATAN KELLVYN DE OLIVEIRA SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330028603","nome":"JOAO HENRIQUE DOS SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330017833","nome":"NICOLAS ALMEIDA DOS SANTOS SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330017870","nome":"KAUAN DA SILVA SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330016792","nome":"PRYSCILLA MARQUES DA SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330018699","nome":"KHAUAN DOS SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202430004355","nome":"YASMIN VITORIA SANTOS COSTA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330016611","nome":"MATHEUS DE ARAUJO SILVA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330016086","nome":"MAYSA DA SILVA SOARES","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330012748","nome":"BIANCA DA SILVA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330013638","nome":"MAYSA GABRIELLY LOPES DOS SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330016890","nome":"DAVI DOS SANTOS BATISTA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330054069","nome":"DAVID LIMA DE MESSIAS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330016550","nome":"NICOLAS GUILHERME SOARES DOS SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330015955","nome":"PEDRO HENRIQUE DOS SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330014205","nome":"EDSON MATHEUS SOUSA DA SILVA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330025998","nome":"YASMIM DOS SANTOS SILVA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330004512","nome":"GILMA GABRIELE DOS SANTOS ALMEIDA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202430008560","nome":"ANA CLARA SILVA MARCELINO","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330016021","nome":"JHENNIFER CAROLAINE COSTA ALVES","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330015884","nome":"ISABELLY DA SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330014751","nome":"JOSE CARLOS DE ARAUJO SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330013905","nome":"ISABELLY NICOLE DOS SANTOS SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330016246","nome":"LETICIA RAFAELA DA SILVA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330016738","nome":"IURI AFONSO ALMEIDA DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330054050","nome":"RAFAEL DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330015964","nome":"MIKAELA DA SILVA SIMAO","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330016184","nome":"VITOR HUGO BATISTA DE MELO","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330014976","nome":"INGRYD MARIZY GOMES FERREIRA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330014994","nome":"JOSE VINICIUS DA SILVA SANTOS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330015015","nome":"MARIA NICOLE DA SILVA MESSIAS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330014967","nome":"FLAVIO DA SILVA SANTOS MESSIAS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330016406","nome":"JAMILY DA SILVA SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330017403","nome":"JARDIANA DOS SANTOS SILVA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330014760","nome":"KASSIELI DOS SANTOS RODRIGUES","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330025989","nome":"WESLLEY BERNARDO DA SILVA VIEIRA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330015070","nome":"YURI GABRIEL LIMA MARTINS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202530001006","nome":"ALEDILSON DAVI SOARES LIMA","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202630001205","nome":"JOAO MIGUEL BARBOSA DOMINGOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202630001214","nome":"JOAO PAULO DOS SANTOS FERREIRA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202630001232","nome":"ANTONNY EMANUEL LIRA BARBOSA","turma":"EFAFM7C","turno":"MATUTINO"},{"matricula":"202630001260","nome":"JOSE FELICIO SILVA MADEIRO","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202630001279","nome":"MARIANRILY SEABRA DA SILVA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202630001288","nome":"ISAQUE DA SILVA CARNEIRO","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202630001297","nome":"ERICK CORREIA DOS SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330029324","nome":"MARIA EDUARDA FERREIRA DE LIRA","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330017548","nome":"MARIA ISABEL CAVALCANTE SANTOS SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202630001303","nome":"PEDRO HENRIQUE MELO GOMES","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330009869","nome":"ANELY VALERIA SILVA SANTOS","turma":"EFAFINT8A","turno":"INTEGRAL"},{"matricula":"202330024883","nome":"JULIO CESAR DA SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202430008819","nome":"PAULO HENRIQUE DANTAS DA SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330012588","nome":"ERICK RUAN DOS SANTOS SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202530007378","nome":"JAMYLE MANUELLY SANTOS LIMA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330038898","nome":"RAFAEL DOS SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202430003133","nome":"EVERTON DAVI DA SILVA SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330041310","nome":"MARIA THAILA DA SILVA RIBEIRO","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330023705","nome":"MARIA FERNANDA VERISSIMO CAVALCANTE","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202430000893","nome":"MARIA MICHELINE SILVA SENA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330035045","nome":"ALBERT KLUYVER LOPES NUNES SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330012541","nome":"FABRICIO HENRIQUE DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330030423","nome":"VITOR MIGUEL DOS SANTOS ALMEIDA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330036104","nome":"JOSE JADSON DE OLIVEIRA SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330011535","nome":"NICOLAS ARTHUR DOS SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330024972","nome":"MARIA EDUARDA SILVA ARAUJO","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330030648","nome":"HUGO ARTUR DA SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330011428","nome":"MARIA ARIELLY DOS SANTOS SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330035626","nome":"ISABELLA FERNANDA DANTAS DOS SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330022842","nome":"ISADORA MARIA MAGALHAES FELISMINO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202430000703","nome":"ANNA LARA SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330040546","nome":"BRUNO EDUARDO LEAO DA SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202430000955","nome":"DAYANNE DA SILVA SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330037442","nome":"PEDRO GABRIEL SAMPAIO FERRO DA SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330012864","nome":"RUAN FERREIRA SANTOS SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330032731","nome":"VICTOR ESLAIDE PEREIRA DA SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330011455","nome":"RIKELLE DOS SANTOS SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330010242","nome":"MYLENA NAYARA SILVA DE JESUS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330034039","nome":"LAYLLA VIVIANY SANTOS SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330033505","nome":"LAYSE ANNY TENORIO DA SILVA","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202430000697","nome":"ADRIELE TEIXEIRA DOS SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330028256","nome":"MARIA RAIANE ALEXSANDRA DA SILVA SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330012229","nome":"MILENA DOS SANTOS ALVES","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202330009742","nome":"GABRIELLY VITORIA DOS SANTOS","turma":"EFAFINT8C","turno":"INTEGRAL"},{"matricula":"202630001330","nome":"MAYSA PINHEIRO DOS SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202630001340","nome":"BENJAMIN TAWIQUE DA SILVA BEZERRA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330009878","nome":"GENARIO HONORATO DOS SANTOS NETO","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330015051","nome":"WESLEY DAVI DOS SANTOS SILVA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330023008","nome":"ANA VITORIA BARBOSA DE FRANCA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330012560","nome":"ANNA BEATRIZ DOS SANTOS PINHEIRO","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330029137","nome":"EMILLY NAYARA DOS SANTOS PEREIRA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330022216","nome":"ISABELLA MANOELA FERREIRA SILVA","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330027885","nome":"JONAS EMANUEL DA SILVA SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330053938","nome":"LIVIA GABRIELE SANTOS DE CARVALHO","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330027179","nome":"LUIZ MIGUEL RICARDO DOS SANTOS SOUZA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330005420","nome":"MIGUEL DOS SANTOS MORAES","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330025844","nome":"PAMELLA KEYLLA DA SILVA OLIVEIRA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330026350","nome":"THAYSSAMIN VITORIA LUIZ SANTOS FARIAS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330012470","nome":"ADRIA RAFAEL LIMA SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330055585","nome":"ANTHONY CARLOS ALVES PEREIRA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330027320","nome":"ARTHUR MIGUEL BARBOSA SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330024041","nome":"ELLOA SOPHYA DOS SANTOS SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330028149","nome":"EMELY VITORIA SILVA LINO","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330013567","nome":"EYSHILA SOPHIA VALENTIM SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330025414","nome":"ISABELLY SOFIA NUNES DOS SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330010091","nome":"LAURA BEATRIZ DA SILVA SOUZA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330028087","nome":"LUIZ DAVI SILVA LOPES VIEIRA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330005144","nome":"MARIA ALICE DA SILVA SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330024702","nome":"JORGE HENRIQUE BERNARDO DA SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330026734","nome":"MARIA DAS NEVES MARQUES MORAES","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330025236","nome":"MARIA EDUARDA SILVA FERREIRA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202630001804","nome":"MARIA EULALIA SOARES LIMA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330031180","nome":"MATEUS DA SILVA SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202630001822","nome":"LARISSA YASMIM CORDEIRO DE LIMA","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202630001831","nome":"MAURIVAN EMANOEL DOS SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202630001840","nome":"ELIZIA DA CONCEICAO RODRIGUES","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202630001850","nome":"JAQUELAINE BEZERRA ANDRE","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330025890","nome":"PEDRO HENRIQUE DA SILVA SANTANA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330042827","nome":"WELTON DAVI DOS SANTOS LIMA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330027929","nome":"WLISSES EMANUEL BATISTA DOS SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330023877","nome":"ANA ESTHER BRANDAO GOMES","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330054990","nome":"ANNA MELYSSA DOS SANTOS SOUZA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330024480","nome":"CARLOS MANOEL ARAUJO DA SILVA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330033766","nome":"LUIZ OTAVIO SANTOS FERREIRA","turma":"EFAFM9D","turno":"MATUTINO"},{"matricula":"202630001896","nome":"JOSE IKARO GABRIEL DA SILVA SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330027750","nome":"ISABELE SOFIA DA SILVA SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330047645","nome":"MATEUS RODRIGUES DOS SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330026940","nome":"ALBERT DOS SANTOS ARAUJO","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330025817","nome":"JOAO GABRIEL FIGUEIREDO CAVALCANTE","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330018330","nome":"ALBERTH YURE GOMES MOTA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330027043","nome":"ANDRE LUIZ LUNA BARRETO FILHO","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202630001920","nome":"EMANUEL DA SILVA ALBUQUERQUE","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202430000454","nome":"CAUA HENRIQUE RODRIGUES LIMA DE MELO","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330023133","nome":"ANNY NAYARA SANTANA FELIX","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330008594","nome":"DALESSANDRA LARISSA DA SILVA SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330030719","nome":"IRIS ARIELA DOS SANTOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330023240","nome":"ANNY NICOLLY SANTANA FELIX","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202630001949","nome":"ELLEN LIMA DE ASSIS ALVES","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330024364","nome":"ANTONY GABRIEL NOBRE PEREIRA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330027428","nome":"CARLOS DANIEL SANTOS DE SOUZA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330048301","nome":"CAROL KEMILY DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330007292","nome":"DAVI LUCAS DOS SANTOS SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330027562","nome":"DAVILA SOFIA BATISTA DUARTE","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330004030","nome":"DAVI EDUARDO BEZERRA DA SILVA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330017477","nome":"EDUARDA SILVA ALVES","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330014573","nome":"ERYCON FELIPE DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330026574","nome":"JOAO MARCOS SANTOS DE FRANCA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330027660","nome":"ERICK DAVI DOS SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202530003637","nome":"JONATHAN LEVY TEODOSIO DA SILVA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330024140","nome":"GABRYELLA FERNANDA REGO SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330024542","nome":"JOSE DAVI ELIAS SILVA PEREIRA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330029718","nome":"JOSE PEDRO DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330028210","nome":"GUILHERME KAUAN DOS SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330030245","nome":"LAIZE MAYSA DOS SANTOS SILVA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330030657","nome":"MARIA ELOYSA TENORIO DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330026823","nome":"LARISSA SOFIA DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330025272","nome":"ISAAC VINICIUS DOS SANTOS SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330025648","nome":"ISABEL VITORIA DA SILVA SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330030933","nome":"MICAELLE RAYANE DA SILVA BARBOSA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330024678","nome":"JULIA BEATRIZ SOUZA BARBOSA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330031260","nome":"NAOMY SANTOS GERONIMO","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330024847","nome":"LAYLA ANEJES GOMES DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330015024","nome":"MIRELLY NICOLE DOS SANTOS SILVA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330031574","nome":"ALERRANDRO WILLAMYS DOS SANTOS COSTA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330028004","nome":"LUIZ MATHEUS CAMILO COSTA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330042175","nome":"PEDRO HENRIQUE DA SILVA PALMEIRA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330030595","nome":"MARIA EDUARDA DE ALMEIDA MELO","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330004380","nome":"ESTER VITORIA DA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330025399","nome":"MARIA ELYSA LUCENA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330028336","nome":"ISYS EMANOELY DA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330015033","nome":"PEDRO HENRIQUE DA SILVA SOUZA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330025933","nome":"PEDRO LUCAS DA SILVA SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202530002255","nome":"PEDRO LUCAS LEITE DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202530004616","nome":"IZAEL DA SILVA SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330005743","nome":"RAYANE NUNES DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330015810","nome":"RAFAEL VIEIRA MENDONCA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330055709","nome":"JENNYFER SOPHYA FRANCA DOS SANTOS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330018400","nome":"THALES EMANOEL DA SILVA BATISTA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330015042","nome":"RENAN BARBOSA SANTOS SENA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330053393","nome":"JOSE FERNANDO DA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330026814","nome":"VANDEVAL SANTOS ALVES JUNIOR","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202430004829","nome":"VICTOR EMANOEL DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330055932","nome":"SAMIA RAFAELLA DE JESUS SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330030405","nome":"LARISSA LIMA DA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330005805","nome":"VITOR EMANUEL DA SILVA SOUZA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330015392","nome":"VINICIUS DAVI ALMEIDA DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330006099","nome":"VITOR GABRIEL SILVA DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330019284","nome":"MARIA TAINA DA SILVA SILVESTRE","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330026304","nome":"YAN DE SOUZA BORBA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330029235","nome":"YTALO RAFAEL CARDOSO DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202430008318","nome":"NICOLLY VICTORIA MENDES ROCHA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330026420","nome":"YURI RANYEL SANTOS DA SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330052930","nome":"VALESCA SOFIA DE LIMA SANTOS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330015759","nome":"WEMESSON DOS SANTOS DUARTE","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330031494","nome":"YONARA SOFIA DA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202630002024","nome":"MARIA YASMIM COSTA DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330026019","nome":"GLEYCE KELLY DE OLIVEIRA ALVES","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330009107","nome":"AURINO BERNARDO DA SILVA NETO","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330014798","nome":"NEYANE DA SILVA SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330017682","nome":"JAYANNE SOPHIA DA SILVA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330019462","nome":"MIGUEL MONTEIRO DOS SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330028710","nome":"JOAO PEDRO PEREIRA SOUZA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330015937","nome":"LARISSA EMANUELLY BARBOSA DOS SANTOS","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330017744","nome":"NYELITON MATHEUS DA SILVA SANTOS","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330018080","nome":"MADSON DAVY DUARTE DE OLIVEIRA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330009653","nome":"ISRAEL HENRIQUE ALVES DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330017495","nome":"MATHEUS AVELINO EUGENIO","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330009368","nome":"CASSIO RAFAEL RODRIGUES DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330010270","nome":"MARIA FLAVIA DA SILVA LEAL","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202630002060","nome":"BARBARA SOUSA DE OLIVEIRA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330017520","nome":"THIAGO LAERTE GOMES AVELINO","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330009457","nome":"ELOA VITORIA SILVA DE OLIVEIRA","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330014920","nome":"BRUNA KARLA SANTOS SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330006141","nome":"YURE DOS SANTOS SILVA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202330009546","nome":"GENNYFER CECILIA DA SILVA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330009976","nome":"KARLA MYRELLE RIBEIRO CARNEIRO","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330010180","nome":"MARIA ELOISA RIBEIRO ALVES","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330010313","nome":"VINICIUS GABRIEL DOS SANTOS OLIVEIRA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202630002169","nome":"JOSE WESLLEY DOS SANTOS CORREIA","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330018788","nome":"MARIA SOPHIA RAMOS DOS SANTOS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330027491","nome":"ALESSANDRO DOS SANTOS DUARTE","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330009250","nome":"BRUNO DANIEL DOS SANTOS SILVA","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202330034324","nome":"SYLAS EMANUEL DA SILVA ANDRADE","turma":"EFAFM7A","turno":"MATUTINO"},{"matricula":"202330043412","nome":"PEDRO MIGUEL RODRIGUES DA SILVA","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330004951","nome":"LUCAS GABRIEL DOS SANTOS","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202530001187","nome":"ANDREZA VICTORIA DOS SANTOS","turma":"EFAFM7B","turno":"MATUTINO"},{"matricula":"202330024794","nome":"EMANUELLE SOPHIA FERREIRA SEABRA","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202530006791","nome":"AISLANE SILVA DE CASTRO","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530006871","nome":"CICERO LOPES DA SILVA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202330038421","nome":"CRISTIANO DOS SANTOS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202430008004","nome":"EDJANE PRAXEDES DE GOES","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530006933","nome":"JOSEFA FELIX SANTOS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530006942","nome":"LEILA DA CONCEICAO SANTANA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202430008381","nome":"MERCIA SILVA BATISTA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530007206","nome":"ROMILTON DEODORO DOS SANTOS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530004993","nome":"SONIA DA SILVA SANTOS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530006890","nome":"FABIO FARIAS DA SILVA PIMENTEL","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202530006853","nome":"MARCIA REGINA AMANCIO SILVESTRE","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202330042489","nome":"ANTONIO DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330002821","nome":"MARIA EDUARDA DANTAS DE CARVALHO","turma":"EFAFM9B","turno":"MATUTINO"},{"matricula":"202630002445","nome":"MARIA JOSE DA SILVA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202630002454","nome":"EDNA DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530005014","nome":"MARIA SANTOS SILVA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202330042086","nome":"MARILENE GOMES DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430001219","nome":"SILVIO BATISTA DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430008425","nome":"CLAUDINEIDE SILVA SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330038350","nome":"JOSE ADEMIR DOS SANTOS BARBOSA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330039198","nome":"JOSE FLAVIO DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530007298","nome":"RAFAELLA DOS SANTOS RIBEIRO","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530007000","nome":"SANDRO ALVES DE CARVALHO","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430008452","nome":"SELMA MONTEIRO DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202630002516","nome":"CRISLANE DOS SANTOS RODRIGUES","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202630002534","nome":"DANILO DANIEL PEREIRA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330038459","nome":"EDNA MARIA DA ROCHA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330041884","nome":"FLAVIO SOARES DAS CHAGAS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530005319","nome":"GILVANIA DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530004680","nome":"GIVANILDO DOS SANTOS RIBEIRO","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530007190","nome":"GIZELMA DOS SANTOS OLIVEIRA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330041866","nome":"HELIO SOARES DAS CHAGAS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530006924","nome":"JAMESSON CASTRO MARQUES","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330041928","nome":"JOSE CICERO DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530005257","nome":"LUIZ CARLOS DE CASTRO SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330038931","nome":"MARIA DAS GRACAS DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330042282","nome":"MARIA DAS GRACAS SANTOS SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330039330","nome":"MARIA ROZIANE SANTOS DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430006073","nome":"VALDENES DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530005041","nome":"ALDIVAN FELIX DE FARIAS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530004920","nome":"CICERA FLORENCIO DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430004767","nome":"MARIA IZAUDETE FERREIRA DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430009244","nome":"MARIA VILMA DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330011660","nome":"PAULO HENRIQUE ALVES DOS SANTOS","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202630002614","nome":"MARCOS RIKELMO DOS SANTOS GOMES","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330026959","nome":"LAURAH EMANUELLY DA SILVA ADVINCULA","turma":"EFAFM6D","turno":"MATUTINO"},{"matricula":"202430008238","nome":"VERONICA DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330052850","nome":"MARIA SOLANGE DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530006530","nome":"GABRIEL DE LIMA NEVES","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330032212","nome":"HENRIQUE GABRIEL DOS SANTOS","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202330030791","nome":"ALEXANDRE DA SILVA DUARTE","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202330002803","nome":"JOSE HENRIQUE DA SILVA DUARTE","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202330024088","nome":"JENYFFER LAYS SILVA DE ARAUJO","turma":"EFAFINT8D","turno":"INTEGRAL"},{"matricula":"202330003220","nome":"LYBNY PEREIRA CAVALCANTE","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330028766","nome":"JOSE ADERLAN PEREIRA DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202630002703","nome":"JOSE EVERTON SALUSTIANO DE ANDRADE","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202630002740","nome":"CLARICIA VITORIA FERREIRA DA SILVA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202630002759","nome":"LAUANE MARCELLY LIMA BARBOSA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202430009075","nome":"ANDRE WALLACE LINS PEREIRA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330002760","nome":"KAYLANNE KEVYLYN SANTOS MARTINS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202630003003","nome":"MARIA APARECIDA DOS SANTOS SANTANA LINS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202330030989","nome":"JOAO MIGUEL DOS SANTOS","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330029315","nome":"JOSE FELIPE NASCIMENTO MONTEIRO","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202630003148","nome":"ORLANDO DA SILVA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202630003157","nome":"MARIA JICELIA BELISARIO DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202530004741","nome":"CARLOS KAIQUE DE LIMA SANTOS","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330024551","nome":"EMYLE APARECIDA DOS SANTOS SILVA","turma":"EFAFV7F","turno":"VESPERTINO"},{"matricula":"202330051568","nome":"MARIA QUITERIA DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202630003442","nome":"MARIA DAS DORES SANTOS SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330042451","nome":"JOSE MILTON DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330003373","nome":"MARIA BEATRIZ DOS SANTOS SILVA","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202430006583","nome":"NYCOLE ELENISE DA SILVA SANTOS","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202530007224","nome":"ELIZABETE ARISTIDES SANTANA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202330012111","nome":"WILLIAM GABRIEL SILVA CALIXTO","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330030085","nome":"JOSE DANIEL DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330032713","nome":"VINICIUS DOS SANTOS SILVA","turma":"EFAFINT8F","turno":"INTEGRAL"},{"matricula":"202530006773","nome":"NATANAEL DA SILVA","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202330028283","nome":"PEDRO HENRIQUE DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202630003845","nome":"ISABELLE FERREIRA SANTOS DE QUEIROZ","turma":"EFAFV9E","turno":"VESPERTINO"},{"matricula":"202330054167","nome":"JOAO MIGUEL MELO MACHADO","turma":"EFAFV6E","turno":"VESPERTINO"},{"matricula":"202330032642","nome":"RYAN GABRIEL SOUZA DA SILVA RAMOS","turma":"EFAFINT8G","turno":"INTEGRAL"},{"matricula":"202330032580","nome":"JOSE JAMERSON BRAZ DA SILVA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202630003943","nome":"TAMIRES ALVES DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330000442","nome":"JOAO MURILO VERISSIMO DE JESUS","turma":"EFAFM9C","turno":"MATUTINO"},{"matricula":"202630003980","nome":"MARILEIDE ALVES DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202430004776","nome":"SAMUEL LEVI SANTOS CALADO","turma":"EFAFM6A","turno":"MATUTINO"},{"matricula":"202630004163","nome":"MARIA CICERA RIBEIRO DOS SANTOS","turma":"EFAFV7E","turno":"VESPERTINO"},{"matricula":"202330035180","nome":"GENESIS RAFAEL DE AMORIM SILVA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202630004181","nome":"JOSE EDUARDO SILVESTRE DA SILVA","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202630004190","nome":"JOSE CARLOS DOS SANTOS FILHO","turma":"EFAFINT8E","turno":"INTEGRAL"},{"matricula":"202630004225","nome":"JAMES BATISTA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330017762","nome":"JOAO MIGUEL EMIDIO CORREIA DOS SANTOS","turma":"EFAFV6F","turno":"VESPERTINO"},{"matricula":"202630004350","nome":"JESSE ANGELO NOGUEIRA DOS SANTOS","turma":"EFAFM6B","turno":"MATUTINO"},{"matricula":"202330034422","nome":"EMILLY JACIELE DOS SANTOS","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202630004388","nome":"CARLOS EDUARDO DOS SANTOS VIEIRA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202330041463","nome":"NYCOLAS JONATAS SILVA BENTO","turma":"EFAFM7D","turno":"MATUTINO"},{"matricula":"202630004397","nome":"JAILSON DA SILVA BARBOSA","turma":"EJAF2VEJAMA","turno":"VESPERTINO"},{"matricula":"202630004430","nome":"MARIA APARECIDA DA SILVA SANTOS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202430009413","nome":"JOSE ALISSON ALVES DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202630004510","nome":"ANA LUCIA DOS SANTOS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202630004539","nome":"CLAUDINETE DOS SANTOS","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202630004600","nome":"MARIA CELIA DE JESUS","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202430006940","nome":"EDNA DA SILVA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202630004619","nome":"MARIA LUCINEIDE DA SILVA","turma":"EJAF2NEJAMB","turno":"NOTURNO"},{"matricula":"202330019248","nome":"MARIA CLARA DA SILVA SANTANA","turma":"EFAFV9F","turno":"VESPERTINO"},{"matricula":"202330014949","nome":"EDILSON CAUA LOPES DOS SANTOS","turma":"EFAFM6C","turno":"MATUTINO"},{"matricula":"202330038388","nome":"EDIVALDO FERREIRA","turma":"EJAF1NEJAMA","turno":"NOTURNO"},{"matricula":"202630004691","nome":"DANIELA DOS SANTOS BARBOSA","turma":"","turno":"NOTURNO"},{"matricula":"202330020820","nome":"CLAUDIELE DOS SANTOS SILVA","turma":"EFAFM7C","turno":"MATUTINO"}];
+
+const turnoLabel = {MATUTINO:'Matutino',VESPERTINO:'Vespertino',INTEGRAL:'Integral',NOTURNO:'Noturno'};
+let rendered = new Map();
+let currentSize = 'medium';
+let filtered = [...STUDENTS];
+
+function qrSize() { return {small:80,medium:112,large:148}[currentSize]; }
+
+function setSize(s) {
+  currentSize = s;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  const grid = document.getElementById('grid');
+  grid.className = 'grid' + (s==='large'?' large':s==='small'?' small':'');
+  // Resize QR canvases (re-render affected cards)
+  rendered.forEach((qr, m) => {
+    const wrap = document.querySelector(`[data-m="${m}"] .qr-wrap`);
+    if (wrap) { wrap.innerHTML=''; qr._el = wrap; qr.makeCode(qr._data); }
+  });
+  document.querySelectorAll('.qr-wrap').forEach(w => {
+    const sz = qrSize();
+    w.style.width = w.style.height = (sz+16)+'px';
+  });
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const turma = document.getElementById('turmaSelect').value;
+  const turno = document.getElementById('turnoSelect').value;
+
+  filtered = STUDENTS.filter(s => {
+    if (turma && s.turma !== turma) return false;
+    if (turno && s.turno !== turno) return false;
+    if (search && !s.nome.toLowerCase().includes(search) && !s.matricula.includes(search)) return false;
+    return true;
+  });
+
+  renderGrid();
+  document.getElementById('countBadge').textContent = filtered.length + ' aluno' + (filtered.length!==1?'s':'');
+  document.getElementById('statTotal').textContent = filtered.length;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>Nenhum aluno encontrado.</p></div>';
+    return;
+  }
+
+  const sizeMap = {small:80, medium:112, large:148};
+
+  filtered.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.m = s.matricula;
+
+    const qrData = s.matricula + '|' + s.nome + '|' + s.turma + '|' + s.turno;
+    const sz = sizeMap[currentSize];
+    const qrWrapSize = sz + 16;
+
+    card.innerHTML = `
+      <div class="qr-wrap" style="width:${qrWrapSize}px;height:${qrWrapSize}px" id="qr_${s.matricula}"></div>
+      <div class="card-info">
+        <div class="card-nome">${s.nome}</div>
+        <div class="tags">
+          <span class="tag tag-turma">${s.turma}</span>
+          <span class="tag tag-turno">${turnoLabel[s.turno]||s.turno}</span>
+        </div>
+        <div class="card-matricula">${s.matricula}</div>
+      </div>
+      <button class="download-btn" onclick="downloadQR('${s.matricula}','${s.nome.replace(/'/g,"\\'")}')">⬇️ Baixar PNG</button>
+    `;
+    grid.appendChild(card);
+
+    // Generate QR
+    setTimeout(() => {
+      const el = document.getElementById('qr_' + s.matricula);
+      if (!el) return;
+      const qr = new QRCode(el, {
+        text: qrData,
+        width: sz, height: sz,
+        colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      qr._data = qrData;
+      rendered.set(s.matricula, qr);
+    }, 0);
+  });
+}
+
+function downloadQR(matricula, nome) {
+  setTimeout(() => {
+    const el = document.getElementById('qr_' + matricula);
+    if (!el) return;
+    const canvas = el.querySelector('canvas') || el.querySelector('img');
+    let url;
+    if (canvas && canvas.tagName === 'CANVAS') {
+      url = canvas.toDataURL('image/png');
+    } else if (canvas && canvas.tagName === 'IMG') {
+      url = canvas.src;
+    } else return;
+    const a = document.createElement('a');
+    a.href = url; a.download = matricula + '_' + nome.replace(/\s+/g,'_') + '.png';
+    a.click();
+  }, 100);
+}
+
+async function downloadAll() {
+  // Download visible QRs as individual files (no JSZip needed)
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = '⏳ Aguarde...'; btn.disabled = true;
+  let count = 0;
+  for (const s of filtered) {
+    const el = document.getElementById('qr_' + s.matricula);
+    if (!el) continue;
+    const canvas = el.querySelector('canvas');
+    if (!canvas) continue;
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = s.matricula + '_' + s.nome.replace(/\s+/g,'_') + '.png';
+    a.click();
+    count++;
+    await new Promise(r => setTimeout(r, 80));
+  }
+  btn.textContent = '⬇️ Baixar Todos (ZIP)'; btn.disabled = false;
+  alert(count + ' QR codes baixados!');
+}
+
+// Init - generate all QR codes progressively
+async function init() {
+  const overlay = document.getElementById('loadingOverlay');
+  const bar = document.getElementById('loadingBar');
+  const text = document.getElementById('loadingText');
+
+  // Pre-render all into hidden divs first
+  const total = STUDENTS.length;
+  // Just show loading and render
+  for (let i = 0; i < total; i += 30) {
+    const pct = Math.round((i / total) * 100);
+    bar.style.width = pct + '%';
+    text.textContent = `${i}/${total} QR codes preparados...`;
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  bar.style.width = '100%';
+  text.textContent = 'Renderizando grade...';
+  await new Promise(r => setTimeout(r, 50));
+
+  renderGrid();
+
+  overlay.style.transition = 'opacity 0.4s';
+  overlay.style.opacity = '0';
+  setTimeout(() => overlay.remove(), 400);
+}
+
+init();
+</script>
+</body>
+</html>
